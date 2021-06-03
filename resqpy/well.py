@@ -46,6 +46,7 @@ import resqpy.crs as crs
 import resqpy.organize as rqo
 import resqpy.property as rqp
 import resqpy.lines as rql
+from resqpy.base import BaseResqml, XmlAttribute, HdfAttribute
 
 import resqpy.olio.grid_functions as gf
 import resqpy.olio.vector_utilities as vec
@@ -303,7 +304,7 @@ class MdDatum():
       return datum
 
 
-class DeviationSurvey():
+class DeviationSurvey(BaseResqml):
    """Class for RESQML wellbore deviation survey.
 
    RESQML documentation:
@@ -326,19 +327,17 @@ class DeviationSurvey():
 
    _resqml_obj = "DeviationSurveyRepresentation"
 
-   _xml_attrs = dict(
-      angle_uom=('AngleUom', str),
-      station_count=('StationCount', int),
-      _first_station_1 = ('FirstStationLocation/Coordinate1', float),
-      _first_station_2 = ('FirstStationLocation/Coordinate2', float),
-      _first_station_3 = ('FirstStationLocation/Coordinate3', float),
-      is_final=('IsFinal', bool)
-   )
+   _attrs =(
+      XmlAttribute(key='angle_uom', tag='AngleUom', dtype=str),
+      XmlAttribute(key='station_count', tag='StationCount', dtype=int),
+      XmlAttribute(key='is_final', tag='IsFinal', dtype=bool),
+      XmlAttribute(key='_first_station_1', tag='FirstStationLocation/Coordinate1', dtype=float),
+      XmlAttribute(key='_first_station_2', tag='FirstStationLocation/Coordinate2', dtype=float),
+      XmlAttribute(key='_first_station_3', tag='FirstStationLocation/Coordinate3', dtype=float),
 
-   _hdf_attrs = dict(
-      measured_depths='Mds',
-      azimuths='Azimuths',
-      inclinations='Inclinations',
+      HdfAttribute(key='measured_depths', tag='Mds'),
+      HdfAttribute(key='azimuths', tag='Azimuths'),
+      HdfAttribute(key='inclinations', tag='Inclinations'),
    )
 
    def __init__(self, parent_model, uuid=None, title=None, deviation_survey_root=None,
@@ -375,8 +374,8 @@ class DeviationSurvey():
       Notes:
          this method does not create an xml node, nor write hdf5 arrays
       """
+      super().__init__(model=parent_model, title=title)
 
-      self.model = parent_model
       self.is_final = is_final
       self.md_uom = bwam.rq_length_unit(md_uom)
       self.title = title
@@ -423,8 +422,6 @@ class DeviationSurvey():
       if self.uuid is None:
          raise ValueError('Cannot get part if uuid is None')
       return self.model.part_for_uuid(self.uuid)
-
-
 
    @classmethod
    def from_data_frame(cls, parent_model, data_frame, md_datum=None, md_col='MD',
@@ -539,29 +536,13 @@ class DeviationSurvey():
          [bool]: True if sucessful
       """
 
-      # Get node from self.uuid 
-      node = self.root
+      super().load_from_xml()
 
-      # for key, (tag_path, dtype) in self._xml_attrs.items():
-      #    value = rqet.find_nested_tags_cast(node, tag_path.split('/'), dtype=dtype)
-      #    setattr(self, key, value)
-
-      # Load XML data
-      self.md_uom=rqet.length_units_from_node(rqet.find_tag(node, 'MdUom', must_exist=True))
-      self.angle_uom=rqet.find_tag_text(node, 'AngleUom', must_exist=True)
-      self.station_count = rqet.find_tag_int(node, 'StationCount', must_exist=True)
-      self.first_station=extract_xyz(rqet.find_tag(node, 'FirstStationLocation', must_exist=True))
-      self.is_final=rqet.find_tag_bool(node, 'IsFinal')
-      self.title = rqet.find_nested_tags_text(node, ['Citation', 'Title'])
-      self.originator = rqet.find_nested_tags_text(node, ['Citation', 'Originator'])
-
-      # Load HDF5 data
-      mds_node = rqet.find_tag(node, 'Mds', must_exist=True)
-      load_hdf5_array(self, mds_node, 'measured_depths')
-      azimuths_node = rqet.find_tag(node, 'Azimuths', must_exist=True)
-      load_hdf5_array(self, azimuths_node, 'azimuths')
-      inclinations_node = rqet.find_tag(node, 'Inclinations', must_exist=True)
-      load_hdf5_array(self, inclinations_node, 'inclinations')
+      self.first_station = (
+         self._first_station_1,
+         self._first_station_2,
+         self._first_station_3,
+      )
 
       # Set related objects
       self.md_datum = self._load_related_datum()
