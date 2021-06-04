@@ -331,13 +331,14 @@ class DeviationSurvey(BaseResqml):
       XmlAttribute(key='station_count', tag='StationCount', dtype=int, xml_ns='xsd', xml_type='positiveInteger'),
       XmlAttribute(key='is_final', tag='IsFinal', dtype=bool, xml_ns='xsd', xml_type='boolean'),
       XmlAttribute(key='md_uom', tag='MdUom', dtype=str, xml_ns='eml', xml_type='LengthUom'),
+      XmlAttribute(key='angle_uom', tag='AngleUom', dtype=str, xml_ns='eml', xml_type='PlaneAngleUom'),
 
       XmlAttribute(key='title', tag='Citation/Title', dtype=str),
       XmlAttribute(key='originator', tag='Citation/Originator', dtype=str),
-      XmlAttribute(key='angle_uom', tag='AngleUom', dtype=str),
-      XmlAttribute(key='_first_station_1', tag='FirstStationLocation/Coordinate1', dtype=float),
-      XmlAttribute(key='_first_station_2', tag='FirstStationLocation/Coordinate2', dtype=float),
-      XmlAttribute(key='_first_station_3', tag='FirstStationLocation/Coordinate3', dtype=float),
+      
+      XmlAttribute(key='_first_station_1', tag='FirstStationLocation/Coordinate1', dtype=float, writeable=False),
+      XmlAttribute(key='_first_station_2', tag='FirstStationLocation/Coordinate2', dtype=float, writeable=False),
+      XmlAttribute(key='_first_station_3', tag='FirstStationLocation/Coordinate3', dtype=float, writeable=False),
 
       HdfAttribute(key='measured_depths', tag='Mds', dtype=float),
       HdfAttribute(key='azimuths', tag='Azimuths', dtype=float),
@@ -631,12 +632,12 @@ class DeviationSurvey(BaseResqml):
 
       self.model.create_solitary_point3d('FirstStationLocation', ds_node, self.first_station)
 
-      angle_uom = rqet.SubElement(ds_node, ns['resqml2'] + 'AngleUom')
-      angle_uom.set(ns['xsi'] + 'type', ns['eml'] + 'PlaneAngleUom')
-      if self.angles_in_degrees:
-         angle_uom.text = 'dega'
-      else:
-         angle_uom.text = 'rad'
+      # angle_uom = rqet.SubElement(ds_node, ns['resqml2'] + 'AngleUom')
+      # angle_uom.set(ns['xsi'] + 'type', ns['eml'] + 'PlaneAngleUom')
+      # if self.angles_in_degrees:
+      #    angle_uom.text = 'dega'
+      # else:
+      #    angle_uom.text = 'rad'
 
       mds = rqet.SubElement(ds_node, ns['resqml2'] + 'Mds')
       mds.set(ns['xsi'] + 'type', ns['resqml2'] + 'DoubleHdf5Array')

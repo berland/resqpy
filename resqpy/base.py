@@ -17,6 +17,7 @@ class BaseAttribute:
     xml_ns: str = None
     xml_type: str = None
     required: bool = True
+    writeable: bool = True
 
     @abstractmethod
     def load(self, obj):
@@ -56,6 +57,9 @@ class XmlAttribute(BaseAttribute):
     def write(self, obj):
         """Write the object to XML"""
 
+        if not self.writeable:
+            return
+
         if self.xml_type is None:
             return
         node = obj.root
@@ -63,10 +67,16 @@ class XmlAttribute(BaseAttribute):
 
         value = getattr(obj, self.key)
 
+        # Type-specific casting
         if self.xml_type == 'boolean':
             value = str(value).lower()
         elif self.xml_type == 'LengthUom':
             value = bwam.rq_length_unit(value)
+        elif self.xml_type == 'PlaneAngleUom':
+            if str(value).strip().lower().startswith('deg'):
+                value = 'dega'
+            else:
+                value = 'rad'
 
         attr_node = rqet.SubElement(node, ns['resqml2'] + self.tag)
         attr_node.set(ns['xsi'] + 'type', ns[self.xml_ns] + self.xml_type)
@@ -187,4 +197,4 @@ class BaseResqml(metaclass=ABCMeta):
 
         # XML and HDF5 attributes
         for attr in self._attrs:
-            attr.write(self)
+            attr.write(obj=self)
