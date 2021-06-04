@@ -46,7 +46,6 @@ import resqpy.crs as crs
 import resqpy.organize as rqo
 import resqpy.property as rqp
 import resqpy.lines as rql
-from resqpy.base import BaseResqml, XmlAttribute, HdfAttribute
 
 import resqpy.olio.grid_functions as gf
 import resqpy.olio.vector_utilities as vec
@@ -57,7 +56,9 @@ import resqpy.olio.xml_et as rqet
 import resqpy.olio.write_hdf5 as rwh5
 import resqpy.olio.keyword_files as kf
 import resqpy.olio.wellspec_keywords as wsk
+import resqpy.olio.attributes as attr
 from resqpy.olio.xml_namespaces import curly_namespace as ns
+from resqpy.olio.base import BaseResqml
 
 
 valid_md_reference_list = ["ground level", "kelly bushing", "mean sea level", "derrick floor", "casing flange",
@@ -328,19 +329,19 @@ class DeviationSurvey(BaseResqml):
    _resqml_obj = "DeviationSurveyRepresentation"
 
    _attrs =(
-      XmlAttribute(key='title', tag='Citation/Title', dtype=str, writeable=False),
-      XmlAttribute(key='originator', tag='Citation/Originator', dtype=str, writeable=False),
-      XmlAttribute(key='station_count', tag='StationCount', dtype=int, xml_ns='xsd', xml_type='positiveInteger'),
-      XmlAttribute(key='is_final', tag='IsFinal', dtype=bool, xml_ns='xsd', xml_type='boolean'),
-      XmlAttribute(key='md_uom', tag='MdUom', dtype=str, xml_ns='eml', xml_type='LengthUom'),
-      XmlAttribute(key='angle_uom', tag='AngleUom', dtype=str, xml_ns='eml', xml_type='PlaneAngleUom'),
-      XmlAttribute(key='_first_station_1', tag='FirstStationLocation/Coordinate1', dtype=float, writeable=False),
-      XmlAttribute(key='_first_station_2', tag='FirstStationLocation/Coordinate2', dtype=float, writeable=False),
-      XmlAttribute(key='_first_station_3', tag='FirstStationLocation/Coordinate3', dtype=float, writeable=False),
+      attr.XmlAttribute(key='title', tag='Citation/Title', dtype=str, writeable=False),
+      attr.XmlAttribute(key='originator', tag='Citation/Originator', dtype=str, writeable=False),
+      attr.XmlAttribute(key='station_count', tag='StationCount', dtype=int, xml_ns='xsd', xml_type='positiveInteger'),
+      attr.XmlAttribute(key='is_final', tag='IsFinal', dtype=bool, xml_ns='xsd', xml_type='boolean'),
+      attr.XmlAttribute(key='md_uom', tag='MdUom', dtype=str, xml_ns='eml', xml_type='LengthUom'),
+      attr.XmlAttribute(key='angle_uom', tag='AngleUom', dtype=str, xml_ns='eml', xml_type='PlaneAngleUom'),
+      attr.XmlAttribute(key='_first_station_1', tag='FirstStationLocation/Coordinate1', dtype=float, writeable=False),
+      attr.XmlAttribute(key='_first_station_2', tag='FirstStationLocation/Coordinate2', dtype=float, writeable=False),
+      attr.XmlAttribute(key='_first_station_3', tag='FirstStationLocation/Coordinate3', dtype=float, writeable=False),
 
-      HdfAttribute(key='measured_depths', tag='Mds', dtype=float, xml_ns='resqml2', xml_type='DoubleHdf5Array'),
-      HdfAttribute(key='azimuths', tag='Azimuths', dtype=float, xml_ns='resqml2', xml_type='DoubleHdf5Array'),
-      HdfAttribute(key='inclinations', tag='Inclinations', dtype=float, xml_ns='resqml2', xml_type='DoubleHdf5Array'),
+      attr.HdfAttribute(key='measured_depths', tag='Mds', dtype=float, xml_ns='resqml2', xml_type='DoubleHdf5Array'),
+      attr.HdfAttribute(key='azimuths', tag='Azimuths', dtype=float, xml_ns='resqml2', xml_type='DoubleHdf5Array'),
+      attr.HdfAttribute(key='inclinations', tag='Inclinations', dtype=float, xml_ns='resqml2', xml_type='DoubleHdf5Array'),
    )
 
    def __init__(self, parent_model, uuid=None, title=None, deviation_survey_root=None,
@@ -611,7 +612,7 @@ class DeviationSurvey(BaseResqml):
          else:
             md_datum_root = self.md_datum.root_node
       assert md_datum_root is not None
-      
+
       self.model.create_md_datum_reference(md_datum_root, root = ds_node)
 
       self.model.create_solitary_point3d('FirstStationLocation', ds_node, self.first_station)
