@@ -324,6 +324,23 @@ class DeviationSurvey():
 
    """
 
+   _resqml_obj = "DeviationSurveyRepresentation"
+
+   _xml_attrs = dict(
+      angle_uom=('AngleUom', str),
+      station_count=('StationCount', int),
+      _first_station_1 = ('FirstStationLocation/Coordinate1', float),
+      _first_station_2 = ('FirstStationLocation/Coordinate2', float),
+      _first_station_3 = ('FirstStationLocation/Coordinate3', float),
+      is_final=('IsFinal', bool)
+   )
+
+   _hdf_attrs = dict(
+      measured_depths='Mds',
+      azimuths='Azimuths',
+      inclinations='Inclinations',
+   )
+
    def __init__(self, parent_model, uuid=None, title=None, deviation_survey_root=None,
                 represented_interp=None, md_datum=None, md_uom='m', angle_uom='degrees',
                 measured_depths=None, azimuths=None, inclinations=None, station_count=None,
