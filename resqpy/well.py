@@ -338,9 +338,9 @@ class DeviationSurvey(BaseResqml):
       XmlAttribute(key='_first_station_2', tag='FirstStationLocation/Coordinate2', dtype=float),
       XmlAttribute(key='_first_station_3', tag='FirstStationLocation/Coordinate3', dtype=float),
 
-      HdfAttribute(key='measured_depths', tag='Mds'),
-      HdfAttribute(key='azimuths', tag='Azimuths'),
-      HdfAttribute(key='inclinations', tag='Inclinations'),
+      HdfAttribute(key='measured_depths', tag='Mds', dtype=float),
+      HdfAttribute(key='azimuths', tag='Azimuths', dtype=float),
+      HdfAttribute(key='inclinations', tag='Inclinations', dtype=float),
    )
 
    def __init__(self, parent_model, uuid=None, title=None, deviation_survey_root=None,
@@ -552,19 +552,10 @@ class DeviationSurvey(BaseResqml):
          [bool]: True if sucessful
       """
 
+      # XML and HDF5 data
       super().load_from_xml()
 
-      node = self.root
-
-       # Load HDF5 data
-      mds_node = rqet.find_tag(node, 'Mds', must_exist=True)
-      load_hdf5_array(self, mds_node, 'measured_depths')
-      azimuths_node = rqet.find_tag(node, 'Azimuths', must_exist=True)
-      load_hdf5_array(self, azimuths_node, 'azimuths')
-      inclinations_node = rqet.find_tag(node, 'Inclinations', must_exist=True)
-      load_hdf5_array(self, inclinations_node, 'inclinations')
-
-      # Set related objects
+      # Related objects
       self.md_datum = self._load_related_datum()
       self.represented_interp = self._load_related_wellbore_interp()
 
@@ -599,10 +590,11 @@ class DeviationSurvey(BaseResqml):
          the newly created deviation survey xml node
       """
 
+      # Validate
       assert self.station_count > 0
+      assert self.uuid is not None
 
-      if ext_uuid is None: ext_uuid = self.model.h5_uuid()
-
+      # Write related MD Root
       if md_datum_root is None:
          if self.md_datum is None:
             if md_datum_xyz is None:
@@ -614,7 +606,9 @@ class DeviationSurvey(BaseResqml):
             md_datum_root = self.md_datum.root_node
       assert md_datum_root is not None
 
-      assert self.uuid is not None
+      # super().create_xml(ext_uuid=ext_uuid)
+
+      if ext_uuid is None: ext_uuid = self.model.h5_uuid()
 
       ds_node = self.model.new_obj_node('DeviationSurveyRepresentation')
       ds_node.attrib['uuid'] = str(self.uuid)

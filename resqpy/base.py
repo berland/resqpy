@@ -49,8 +49,7 @@ class XmlAttribute(BaseAttribute):
     def write(self, obj):
         """Write the object to XML"""
 
-        
-        pass  # TODO
+        raise NotImplementedError
 
 
 class HdfAttribute(BaseAttribute):
@@ -66,12 +65,20 @@ class HdfAttribute(BaseAttribute):
     def load(self, obj):
         """Load the array from HDF5, set as attribute of obj"""
 
-        array_node = rqet.find_tag(obj.root, self.tag, must_exist=self.required)
-        _load_hdf5_array(obj, array_node, self.tag)
+        model = obj.model
+        root = obj.root
+
+        array_node = rqet.find_tag(root, self.tag, must_exist=self.required)
+        assert rqet.node_type(array_node) in ['DoubleHdf5Array', 'IntegerHdf5Array', 'Point3dHdf5Array']
+
+        h5_key_pair = model.h5_uuid_and_path_for_node(array_node, tag="Values")
+        if h5_key_pair is None: return None
+        return model.h5_array_element(h5_key_pair, index=None, cache_array=True,
+            dtype=self.dtype, object=obj, array_attribute=self.key)
 
     def write(self, obj):
-        """Write the object to HDF5"""
-        pass  # TODO
+        """Write the object to HDF5, set as attribute of obj"""
+        raise NotImplementedError
 
 
 class BaseResqml(metaclass=ABCMeta):
@@ -116,10 +123,12 @@ class BaseResqml(metaclass=ABCMeta):
         for attr in self._attrs:
             attr.load(self)
 
-    def create_xml(self):
+    def create_xml(self, ext_uuid=None):
         """Write XML for object"""
 
         assert self.uuid is not None
+
+        if ext_uuid is None: ext_uuid = self.model.h5_uuid()
 
         node = self.model.new_obj_node(self._resqml_obj)
         node.attrib['uuid'] = str(self.uuid)
@@ -130,14 +139,3 @@ class BaseResqml(metaclass=ABCMeta):
 
         for attr in self._attrs:
             attr.write(self)
-
-
-def _load_hdf5_array(object, node, array_attribute, tag = 'Values', dtype = 'float', model = None):
-   """Loads the property array data as an attribute of object, from the hdf5 referenced in xml node. """
-
-   assert(rqet.node_type(node) in ['DoubleHdf5Array', 'IntegerHdf5Array', 'Point3dHdf5Array'])
-   if model is None: model = object.model
-   h5_key_pair = model.h5_uuid_and_path_for_node(node, tag = tag)
-   if h5_key_pair is None: return None
-   return model.h5_array_element(h5_key_pair, index = None, cache_array = True, dtype = dtype,
-                                 object = object, array_attribute = array_attribute)
