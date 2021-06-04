@@ -1,17 +1,22 @@
 """Base class for generic resqml objects """
 
 from abc import ABCMeta, abstractmethod
+from dataclasses import dataclass
 from typing import Iterable
 
 import resqpy.olio.xml_et as rqet
 import resqpy.olio.uuid as bu
+import resqpy.olio.weights_and_measures as bwam
+from resqpy.olio.xml_namespaces import curly_namespace as ns
 
+@dataclass
 class BaseAttribute:
-    def __init__(self, key, tag, dtype=None, required=True):
-        self.key = key
-        self.tag = tag
-        self.dtype = dtype
-        self.required = required
+    key: str
+    tag: str
+    dtype: type
+    xml_ns: str = None
+    xml_type: str = None
+    required: bool = True
 
     @abstractmethod
     def load(self, obj):
@@ -29,6 +34,8 @@ class XmlAttribute(BaseAttribute):
         key (str): attribute to be saved to python class
         tag (str): path in XML, possibly nested (e.g. foo/bar)
         dtype (type): One of str, bool, int, float, None
+        xml_ns (str): One of xsd or eml, resqml2 
+        xml_type: One of positiveInteger
         required (bool): If True, should always be present
     """
 
@@ -49,7 +56,23 @@ class XmlAttribute(BaseAttribute):
     def write(self, obj):
         """Write the object to XML"""
 
-        raise NotImplementedError
+        if self.xml_type is None:
+            return
+        node = obj.root
+        assert node is not None
+
+        value = getattr(obj, self.key)
+
+        if self.xml_type == 'boolean':
+            value = str(value).lower()
+        elif self.xml_type == 'LengthUom':
+            value = bwam.rq_length_unit(value)
+
+        attr_node = rqet.SubElement(node, ns['resqml2'] + self.tag)
+        attr_node.set(ns['xsi'] + 'type', ns[self.xml_ns] + self.xml_type)
+        attr_node.text = str(value)
+
+
 
 
 class HdfAttribute(BaseAttribute):
@@ -78,7 +101,9 @@ class HdfAttribute(BaseAttribute):
 
     def write(self, obj):
         """Write the object to HDF5, set as attribute of obj"""
-        raise NotImplementedError
+        
+        if self.xml_type is None:
+            return 
 
 
 class BaseResqml(metaclass=ABCMeta):
@@ -90,6 +115,8 @@ class BaseResqml(metaclass=ABCMeta):
         self.model = model
         self.title = title
         self.originator = originator
+
+        self._root = None  # Root in memory, may not be in model
 
         if uuid is None:
             self.uuid = bu.new_uuid()
@@ -106,9 +133,16 @@ class BaseResqml(metaclass=ABCMeta):
     @property
     def root(self):
         """Node corresponding to self.uuid"""
+
         if self.uuid is None:
             raise ValueError('Cannot get root if uuid is None')
+        if self._root is not None:
+            return self._root
         return self.model.root_for_uuid(self.uuid)
+
+    @root.setter
+    def root(self, value):
+        self._root = value
 
     @property
     def part(self):
@@ -123,8 +157,16 @@ class BaseResqml(metaclass=ABCMeta):
         for attr in self._attrs:
             attr.load(self)
 
-    def create_xml(self, ext_uuid=None):
-        """Write XML for object"""
+    def create_xml(self, title=None, originator=None, ext_uuid=None):
+        """Write XML for object
+        
+        Args:
+            title (string): used as the citation Title text; should usually refer to the well name in a
+                human readable way
+            originator (string, optional): the name of the human being who created the deviation survey part;
+                default is to use the login name
+        
+        """
 
         assert self.uuid is not None
 
@@ -132,10 +174,17 @@ class BaseResqml(metaclass=ABCMeta):
 
         node = self.model.new_obj_node(self._resqml_obj)
         node.attrib['uuid'] = str(self.uuid)
+        self.root = node
 
+        assert self.root is not None
+
+        # Citation block
+        if title: self.title = title
+        if originator: self.originator = originator
         self.model.create_citation(
             root=node, title=self.title, originator=self.originator
         )
 
+        # XML and HDF5 attributes
         for attr in self._attrs:
             attr.write(self)

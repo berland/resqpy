@@ -328,12 +328,13 @@ class DeviationSurvey(BaseResqml):
    _resqml_obj = "DeviationSurveyRepresentation"
 
    _attrs =(
+      XmlAttribute(key='station_count', tag='StationCount', dtype=int, xml_ns='xsd', xml_type='positiveInteger'),
+      XmlAttribute(key='is_final', tag='IsFinal', dtype=bool, xml_ns='xsd', xml_type='boolean'),
+      XmlAttribute(key='md_uom', tag='MdUom', dtype=str, xml_ns='eml', xml_type='LengthUom'),
+
       XmlAttribute(key='title', tag='Citation/Title', dtype=str),
       XmlAttribute(key='originator', tag='Citation/Originator', dtype=str),
-      XmlAttribute(key='md_uom', tag='MdUom', dtype=str),
       XmlAttribute(key='angle_uom', tag='AngleUom', dtype=str),
-      XmlAttribute(key='station_count', tag='StationCount', dtype=int),
-      XmlAttribute(key='is_final', tag='IsFinal', dtype=bool),
       XmlAttribute(key='_first_station_1', tag='FirstStationLocation/Coordinate1', dtype=float),
       XmlAttribute(key='_first_station_2', tag='FirstStationLocation/Coordinate2', dtype=float),
       XmlAttribute(key='_first_station_3', tag='FirstStationLocation/Coordinate3', dtype=float),
@@ -606,31 +607,25 @@ class DeviationSurvey(BaseResqml):
             md_datum_root = self.md_datum.root_node
       assert md_datum_root is not None
 
-      # super().create_xml(ext_uuid=ext_uuid)
+
+      super().create_xml(ext_uuid=ext_uuid)
+
+      ds_node = self.root
+
 
       if ext_uuid is None: ext_uuid = self.model.h5_uuid()
 
-      ds_node = self.model.new_obj_node('DeviationSurveyRepresentation')
-      ds_node.attrib['uuid'] = str(self.uuid)
+      # if_node = rqet.SubElement(ds_node, ns['resqml2'] + 'IsFinal')
+      # if_node.set(ns['xsi'] + 'type', ns['xsd'] + 'boolean')
+      # if_node.text = str(self.is_final).lower()
 
-      if title:
-         self.title = title
-      if originator:
-         self.originator = originator
+      # sc_node = rqet.SubElement(ds_node, ns['resqml2'] + 'StationCount')
+      # sc_node.set(ns['xsi'] + 'type', ns['xsd'] + 'positiveInteger')
+      # sc_node.text = str(self.station_count)
 
-      self.model.create_citation(root=ds_node, title=self.title, originator=self.originator)
-
-      if_node = rqet.SubElement(ds_node, ns['resqml2'] + 'IsFinal')
-      if_node.set(ns['xsi'] + 'type', ns['xsd'] + 'boolean')
-      if_node.text = str(self.is_final).lower()
-
-      sc_node = rqet.SubElement(ds_node, ns['resqml2'] + 'StationCount')
-      sc_node.set(ns['xsi'] + 'type', ns['xsd'] + 'positiveInteger')
-      sc_node.text = str(self.station_count)
-
-      md_uom = rqet.SubElement(ds_node, ns['resqml2'] + 'MdUom')
-      md_uom.set(ns['xsi'] + 'type', ns['eml'] + 'LengthUom')
-      md_uom.text = bwam.rq_length_unit(self.md_uom)
+      # md_uom = rqet.SubElement(ds_node, ns['resqml2'] + 'MdUom')
+      # md_uom.set(ns['xsi'] + 'type', ns['eml'] + 'LengthUom')
+      # md_uom.text = bwam.rq_length_unit(self.md_uom)
 
       self.model.create_md_datum_reference(md_datum_root, root = ds_node)
 
