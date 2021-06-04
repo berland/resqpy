@@ -1,8 +1,10 @@
 """Base class for generic resqml objects """
 
 from abc import ABCMeta, abstractmethod
+from typing import Iterable
 
 import resqpy.olio.xml_et as rqet
+import resqpy.olio.uuid as bu
 
 class BaseAttribute:
     def __init__(self, key, tag, dtype=None, required=True):
@@ -75,18 +77,18 @@ class HdfAttribute(BaseAttribute):
 class BaseResqml(metaclass=ABCMeta):
     """Base class for generic RESQML objects"""
 
-    _attrs: tuple[BaseAttribute] = ()
+    _attrs: Iterable[BaseAttribute] = ()
 
-    def __init__(self, model, title, originator=None):
+    def __init__(self, model, uuid=None, title=None, originator=None):
         self.model = model
         self.title = title
         self.originator = originator
 
-    @property
-    @abstractmethod
-    def uuid(self):
-        # Must be overridden in child classes
-        raise NotImplementedError
+        if uuid is None:
+            self.uuid = bu.new_uuid()
+        else:
+            self.uuid = uuid
+            self.load_from_xml()
 
     @property
     @abstractmethod

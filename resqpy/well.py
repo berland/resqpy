@@ -328,6 +328,9 @@ class DeviationSurvey(BaseResqml):
    _resqml_obj = "DeviationSurveyRepresentation"
 
    _attrs =(
+      XmlAttribute(key='title', tag='Citation/Title', dtype=str),
+      XmlAttribute(key='originator', tag='Citation/Originator', dtype=str),
+      XmlAttribute(key='md_uom', tag='MdUom', dtype=str),
       XmlAttribute(key='angle_uom', tag='AngleUom', dtype=str),
       XmlAttribute(key='station_count', tag='StationCount', dtype=int),
       XmlAttribute(key='is_final', tag='IsFinal', dtype=bool),
@@ -374,15 +377,10 @@ class DeviationSurvey(BaseResqml):
       Notes:
          this method does not create an xml node, nor write hdf5 arrays
       """
-      super().__init__(model=parent_model, title=title)
 
       self.is_final = is_final
       self.md_uom = bwam.rq_length_unit(md_uom)
-      self.title = title
-      self.originator = originator
-
-      self.angles_in_degrees = angle_uom.strip().lower().startswith('deg')
-      """boolean: True for degrees, False for radians (nothing else supported). Should be 'dega' or 'rad'"""
+      self.angle_uom = angle_uom
 
       # Array data
       self.measured_depths = _as_optional_array(measured_depths)
@@ -403,11 +401,29 @@ class DeviationSurvey(BaseResqml):
          warnings.warn("Argument deviation_survey_root is deprecated, please use uuid")
          uuid = rqet.uuid_for_part_root(deviation_survey_root)
 
-      if uuid is None:
-         self.uuid = bu.new_uuid()
-      else:
-         self.uuid = uuid
-         self.load_from_xml()
+      super().__init__(
+         model=parent_model, uuid=uuid, title=title, originator=originator
+      )
+
+   @property
+   def angles_in_degrees(self):
+      """True for degrees, False for radians (nothing else supported).
+
+      Not stored, calculated from self.angle_uom, which should be 'dega' or 'rad'
+      """
+      return self.angle_uom.strip().lower().startswith('deg')
+
+   @property
+   def first_station(self):
+      return self._first_station_1, self._first_station_2, self._first_station_3
+
+   @first_station.setter
+   def first_station(self, value):
+      if value is None:
+         value = [None] * 3
+      self._first_station_1 = value[0]
+      self._first_station_2 = value[1]
+      self._first_station_3 = value[2]
 
    @property
    def root(self):
@@ -538,11 +554,15 @@ class DeviationSurvey(BaseResqml):
 
       super().load_from_xml()
 
-      self.first_station = (
-         self._first_station_1,
-         self._first_station_2,
-         self._first_station_3,
-      )
+      node = self.root
+
+       # Load HDF5 data
+      mds_node = rqet.find_tag(node, 'Mds', must_exist=True)
+      load_hdf5_array(self, mds_node, 'measured_depths')
+      azimuths_node = rqet.find_tag(node, 'Azimuths', must_exist=True)
+      load_hdf5_array(self, azimuths_node, 'azimuths')
+      inclinations_node = rqet.find_tag(node, 'Inclinations', must_exist=True)
+      load_hdf5_array(self, inclinations_node, 'inclinations')
 
       # Set related objects
       self.md_datum = self._load_related_datum()
