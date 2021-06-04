@@ -59,9 +59,7 @@ class XmlAttribute(BaseAttribute):
 
         if not self.writeable:
             return
-
-        if self.xml_type is None:
-            return
+            
         node = obj.root
         assert node is not None
 
@@ -111,9 +109,26 @@ class HdfAttribute(BaseAttribute):
 
     def write(self, obj):
         """Write the object to HDF5, set as attribute of obj"""
+            
+        if not self.writeable:
+            return
+
+        node = obj.root
+        model = obj.model
+        obj_uuid = obj.uuid
+        ext_uuid = model.h5_uuid()
+        assert node is not None
+
+        attr_node = rqet.SubElement(node, ns['resqml2'] + self.tag)
+        attr_node.set(ns['xsi'] + 'type', ns[self.xml_ns] + self.xml_type)
+        attr_node.text = rqet.null_xml_text
+
+        attr_values_node = rqet.SubElement(attr_node, ns['resqml2'] + 'Values')
+        attr_values_node.set(ns['xsi'] + 'type', ns['resqml2'] + 'Hdf5Dataset')
+        attr_values_node.text = rqet.null_xml_text
+
+        model.create_hdf5_dataset_ref(ext_uuid, obj_uuid, self.tag, root=attr_values_node)
         
-        if self.xml_type is None:
-            return 
 
 
 class BaseResqml(metaclass=ABCMeta):
