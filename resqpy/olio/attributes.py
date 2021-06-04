@@ -8,6 +8,8 @@ import resqpy.olio.weights_and_measures as bwam
 from resqpy.olio.xml_namespaces import curly_namespace as ns
 
 
+# Todo: Enum of the valid XML types
+
 @dataclass
 class BaseAttribute:
     key: str
@@ -23,7 +25,7 @@ class BaseAttribute:
         raise NotImplementedError
 
     @abstractmethod
-    def write(self, obj):
+    def write_xml(self, obj):
         raise NotImplementedError
 
 
@@ -53,11 +55,16 @@ class XmlAttribute(BaseAttribute):
             raise ValueError(f'Could not load required attribute {self}')
         setattr(obj, self.key, value)
 
-    def write(self, obj):
+    def write_xml(self, obj):
         """Write the object to XML"""
 
         if not self.writeable:
             return
+
+        if '/' in self.tag:
+            raise NotImplementedError(
+                "XmlAttribute cannot currently write nested attributes"
+                )
         
         node = obj.root
         assert node is not None
@@ -104,8 +111,8 @@ class HdfAttribute(BaseAttribute):
         return model.h5_array_element(h5_key_pair, index=None, cache_array=True,
             dtype=self.dtype, object=obj, array_attribute=self.key)
 
-    def write(self, obj):
-        """Write the object to HDF5, set as attribute of obj"""
+    def write_xml(self, obj):
+        """Write the object to XML, set as attribute of obj"""
             
         if not self.writeable:
             return

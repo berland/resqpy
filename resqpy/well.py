@@ -329,16 +329,20 @@ class DeviationSurvey(BaseResqml):
    _resqml_obj = "DeviationSurveyRepresentation"
 
    _attrs =(
-      attr.XmlAttribute(key='title', tag='Citation/Title', dtype=str, writeable=False),
-      attr.XmlAttribute(key='originator', tag='Citation/Originator', dtype=str, writeable=False),
+      # Top-level tags
       attr.XmlAttribute(key='station_count', tag='StationCount', dtype=int, xml_ns='xsd', xml_type='positiveInteger'),
       attr.XmlAttribute(key='is_final', tag='IsFinal', dtype=bool, xml_ns='xsd', xml_type='boolean'),
       attr.XmlAttribute(key='md_uom', tag='MdUom', dtype=str, xml_ns='eml', xml_type='LengthUom'),
       attr.XmlAttribute(key='angle_uom', tag='AngleUom', dtype=str, xml_ns='eml', xml_type='PlaneAngleUom'),
+      
+      # Nested tags, with custom write_xml 
+      attr.XmlAttribute(key='title', tag='Citation/Title', dtype=str, writeable=False),
+      attr.XmlAttribute(key='originator', tag='Citation/Originator', dtype=str, writeable=False),
       attr.XmlAttribute(key='_first_station_1', tag='FirstStationLocation/Coordinate1', dtype=float, writeable=False),
       attr.XmlAttribute(key='_first_station_2', tag='FirstStationLocation/Coordinate2', dtype=float, writeable=False),
       attr.XmlAttribute(key='_first_station_3', tag='FirstStationLocation/Coordinate3', dtype=float, writeable=False),
 
+      # HDF5 arrays
       attr.HdfAttribute(key='measured_depths', tag='Mds', dtype=float, xml_ns='resqml2', xml_type='DoubleHdf5Array'),
       attr.HdfAttribute(key='azimuths', tag='Azimuths', dtype=float, xml_ns='resqml2', xml_type='DoubleHdf5Array'),
       attr.HdfAttribute(key='inclinations', tag='Inclinations', dtype=float, xml_ns='resqml2', xml_type='DoubleHdf5Array'),
@@ -553,7 +557,7 @@ class DeviationSurvey(BaseResqml):
          [bool]: True if sucessful
       """
 
-      # XML and HDF5 data
+      # Load XML and HDF5 attributes
       super().load_from_xml()
 
       # Related objects
@@ -595,7 +599,7 @@ class DeviationSurvey(BaseResqml):
       assert self.station_count > 0
       assert self.uuid is not None
 
-      # Write simple XML and HDF5 attributes
+      # Write XML and HDF5 attributes
       super().create_xml(ext_uuid=ext_uuid)
 
       # Write related objects
@@ -638,17 +642,6 @@ class DeviationSurvey(BaseResqml):
             self.model.create_reciprocal_relationship(ds_node, 'mlToExternalPartProxy', ext_node, 'externalPartProxyToMl')
 
       return ds_node
-
-
-   def write_hdf5(self, file_name = None, mode = 'a'):
-      """Create or append to an hdf5 file, writing datasets for the measured depths, azimuths, and inclinations."""
-
-      # NB: array data must all have been set up prior to calling this function
-      h5_reg = rwh5.H5Register(self.model)
-      h5_reg.register_dataset(self.uuid, 'Mds', self.measured_depths, dtype=float)
-      h5_reg.register_dataset(self.uuid, 'Azimuths', self.azimuths, dtype=float)
-      h5_reg.register_dataset(self.uuid, 'Inclinations', self.inclinations, dtype=float)
-      h5_reg.write(file = file_name, mode = mode)
 
    def _load_related_datum(self):
       """Return related MdDatum object from XML if present"""

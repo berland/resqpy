@@ -4,7 +4,8 @@ from abc import ABCMeta, abstractmethod
 from typing import Iterable
 
 import resqpy.olio.uuid as bu
-from resqpy.olio.attributes import BaseAttribute
+import resqpy.olio.write_hdf5 as rwh5
+from resqpy.olio.attributes import BaseAttribute, HdfAttribute
 
 
 class BaseResqml(metaclass=ABCMeta):
@@ -88,4 +89,18 @@ class BaseResqml(metaclass=ABCMeta):
 
         # XML and HDF5 attributes
         for attr in self._attrs:
-            attr.write(obj=self)
+            attr.write_xml(obj=self)
+
+    def write_hdf5(self, file_name=None, mode='a'):
+        """Create or append to an hdf5 file"""
+
+        hdf_attrs = [a for a in self._attrs if isinstance(a, HdfAttribute)]
+
+        if len(hdf_attrs) == 0:
+            raise ValueError(f"Class {self} has no HDF5 attributes to write")
+        
+        h5_reg = rwh5.H5Register(self.model)
+        for attr in hdf_attrs:
+            array = getattr(self, attr.key)
+            h5_reg.register_dataset(self.uuid, attr.tag, array, dtype=attr.dtype)
+        h5_reg.write(file=file_name, mode=mode)
