@@ -542,6 +542,10 @@ class DeviationSurvey():
       # Get node from self.uuid 
       node = self.root
 
+      # for key, (tag_path, dtype) in self._xml_attrs.items():
+      #    value = rqet.find_nested_tags_cast(node, tag_path.split('/'), dtype=dtype)
+      #    setattr(self, key, value)
+
       # Load XML data
       self.md_uom=rqet.length_units_from_node(rqet.find_tag(node, 'MdUom', must_exist=True))
       self.angle_uom=rqet.find_tag_text(node, 'AngleUom', must_exist=True)
