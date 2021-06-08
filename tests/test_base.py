@@ -8,9 +8,8 @@ def test_base_creation(example_model):
 
     # Setup new object
     title = 'Wondermuffin'
-    originator = 'Scruffian'
     model, crs = example_model
-    dummy = DummyObj(model=model, title=title, originator=originator)
+    dummy = DummyObj(model=model, title=title)
 
     # UUID should exist, but not root or part
     assert dummy.uuid is not None
@@ -21,6 +20,25 @@ def test_base_creation(example_model):
     dummy.create_xml()
     assert dummy.root is not None
     assert dummy.part is not None
+
+
+def test_base_save_and_load(example_model):
+
+    # Create and save a DummyObj
+    title = 'feefifofum'
+    originator = 'Scruffian'
+    model, crs = example_model
+    dummy1 = DummyObj(model=model, title=title, originator=originator)
+    dummy1.create_xml()
+
+    # Load a new object
+    dummy2 = DummyObj(model=model, uuid=dummy1.uuid)
+
+    # Properties should match
+    assert dummy2.uuid == dummy1.uuid
+    assert dummy2.root is not None
+    assert dummy2.title == title
+    assert dummy2.originator == originator
 
 
 def test_base_comparison(example_model):
