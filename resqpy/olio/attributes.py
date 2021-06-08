@@ -10,19 +10,39 @@ from resqpy.olio.xml_namespaces import curly_namespace as ns
 
 
 logger = logging.getLogger(__name__)
+    
 
-
-# Todo: Enum of the valid XML types
-
-@dataclass
 class BaseAttribute:
-    key: str
-    tag: str
-    dtype: type
-    xml_ns: str = None
-    xml_type: str = None
-    required: bool = True
-    writeable: bool = True
+
+    xml_types = dict(
+        double           = dict(dtype=float, xml_ns='xsd'),
+        positiveInteger  = dict(dtype=int,   xml_ns='xsd'),
+        boolean          = dict(dtype=bool,  xml_ns='xsd'),
+        LengthUom        = dict(dtype=str,   xml_ns='eml'),
+        PlaneAngleUom    = dict(dtype=str,   xml_ns='eml'),
+        DoubleHdf5Array  = dict(dtype=float, xml_ns='resqml2'),
+    )
+
+    def __init__(self, key, tag, xml_type, required=True, writable=True):
+        """Definition of an attribute stored to disk
+        
+        Args:
+            key (str): Name of attribute where value is stored in memory
+            tag (str): Tag name in XML where value is stored to disk
+            xtype (str): XML type, one of BaseAttribute.xml_types
+            required (bool): If True, should always be given
+            writable (bool): If False, do not try to write to disk, only load.
+        """
+        self.key = key
+        self.tag = tag
+        self.xml_type = xml_type
+        self.required = required
+        self.writable = writable
+        
+        # Lookup properties for the xml type
+        xml_props = self.xml_types[xml_type]
+        self.dtype = xml_props["dtype"]
+        self.xml_ns = xml_props["xml_ns"]
 
     @abstractmethod
     def load(self, obj):
@@ -34,16 +54,7 @@ class BaseAttribute:
 
 
 class XmlAttribute(BaseAttribute):
-    """Definition of an attribute stored in XML
-    
-    Args:
-        key (str): attribute to be saved to python class
-        tag (str): path in XML, possibly nested (e.g. foo/bar)
-        dtype (type): One of str, bool, int, float, None
-        xml_ns (str): One of xsd or eml, resqml2 
-        xml_type: One of positiveInteger
-        required (bool): If True, should always be present
-    """
+    """Definition of an attribute stored in XML """
 
     def load(self, obj):
         """Load the value from XML, set as attribute of obj
@@ -96,14 +107,7 @@ class XmlAttribute(BaseAttribute):
 
 
 class HdfAttribute(BaseAttribute):
-    """Definition of an attribute stord in HDF5
-    
-    Args:
-        key (str): attribute to be saved to python class
-        tag (str): tag name of HDF5 object
-        dtype (type): One of str, bool, int, float, None
-        required (bool): If True, should always be present
-    """
+    """Definition of an attribute stord in HDF5 """
 
     def load(self, obj):
         """Load the array from HDF5, set as attribute of obj"""

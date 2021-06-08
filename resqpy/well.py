@@ -330,22 +330,20 @@ class DeviationSurvey(BaseResqml):
 
    _attrs =(
       # Top-level tags
-      attr.XmlAttribute(key='station_count', tag='StationCount', dtype=int, xml_ns='xsd', xml_type='positiveInteger'),
-      attr.XmlAttribute(key='is_final', tag='IsFinal', dtype=bool, xml_ns='xsd', xml_type='boolean'),
-      attr.XmlAttribute(key='md_uom', tag='MdUom', dtype=str, xml_ns='eml', xml_type='LengthUom'),
-      attr.XmlAttribute(key='angle_uom', tag='AngleUom', dtype=str, xml_ns='eml', xml_type='PlaneAngleUom'),
+      attr.XmlAttribute(key='station_count', tag='StationCount', xml_type='positiveInteger'),
+      attr.XmlAttribute(key='is_final', tag='IsFinal', xml_type='boolean'),
+      attr.XmlAttribute(key='md_uom', tag='MdUom', xml_type='LengthUom'),
+      attr.XmlAttribute(key='angle_uom', tag='AngleUom', xml_type='PlaneAngleUom'),
       
-      # Nested tags, with custom write_xml 
-      attr.XmlAttribute(key='title', tag='Citation/Title', dtype=str, writeable=False),
-      attr.XmlAttribute(key='originator', tag='Citation/Originator', dtype=str, writeable=False),
-      attr.XmlAttribute(key='_first_station_1', tag='FirstStationLocation/Coordinate1', dtype=float, writeable=False),
-      attr.XmlAttribute(key='_first_station_2', tag='FirstStationLocation/Coordinate2', dtype=float, writeable=False),
-      attr.XmlAttribute(key='_first_station_3', tag='FirstStationLocation/Coordinate3', dtype=float, writeable=False),
+      # Nested tags, with custom write_xml
+      attr.XmlAttribute(key='_first_station_1', tag='FirstStationLocation/Coordinate1', xml_type="double", writeable=False),
+      attr.XmlAttribute(key='_first_station_2', tag='FirstStationLocation/Coordinate2', xml_type="double", writeable=False),
+      attr.XmlAttribute(key='_first_station_3', tag='FirstStationLocation/Coordinate3', xml_type="double", writeable=False),
 
       # HDF5 arrays
-      attr.HdfAttribute(key='measured_depths', tag='Mds', dtype=float, xml_ns='resqml2', xml_type='DoubleHdf5Array'),
-      attr.HdfAttribute(key='azimuths', tag='Azimuths', dtype=float, xml_ns='resqml2', xml_type='DoubleHdf5Array'),
-      attr.HdfAttribute(key='inclinations', tag='Inclinations', dtype=float, xml_ns='resqml2', xml_type='DoubleHdf5Array'),
+      attr.HdfAttribute(key='measured_depths', tag='Mds', xml_type='DoubleHdf5Array'),
+      attr.HdfAttribute(key='azimuths', tag='Azimuths', xml_type='DoubleHdf5Array'),
+      attr.HdfAttribute(key='inclinations', tag='Inclinations', xml_type='DoubleHdf5Array'),
    )
 
    def __init__(self, parent_model, uuid=None, title=None, deviation_survey_root=None,
