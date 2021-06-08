@@ -42,6 +42,10 @@ class BaseResqml(metaclass=ABCMeta):
         self.title = title
         self.originator = originator
 
+        # Temporary cache of root note
+        # TODO: remove attibute _root
+        self._root = None
+
         if uuid is None:
             self.uuid = bu.new_uuid()
             logger.debug(f"Created new uuid for object {self}")
@@ -66,11 +70,14 @@ class BaseResqml(metaclass=ABCMeta):
 
         if self.uuid is None:
             raise ValueError('Cannot get root if uuid is None')
+        if self._root is not None:
+            return self._root
         return self.model.root_for_uuid(self.uuid)
     
     @root.setter
     def root(self, value):
         # Only store the new uuid if root is changed
+        self._root = value
         new_uuid = rqet.uuid_for_part_root(value)
         if new_uuid is None:
             raise ValueError("Cannot set uuid to be None")
