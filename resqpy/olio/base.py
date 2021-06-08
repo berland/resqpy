@@ -15,7 +15,27 @@ logger = logging.getLogger(__name__)
 
 
 class BaseResqml(metaclass=ABCMeta):
-    """Base class for generic RESQML objects"""
+    """Base class for generic RESQML objects
+    
+    Implements generic attributes such as uuid, root, part, title, originator.
+
+    Implements generic magic methods, such as pretty printing and testing for
+    equality.
+
+    To enable easy creation of subclasses, one can define in the subclass a
+    list of XML and HDF5 attributes, which can be loaded and saved with the
+    generic `load_from_xml` and `create_xml` methods.
+    
+    Example use::
+
+        class AnotherResqmlObject(BaseResqml):
+            
+            _content_type = 'obj_anotherresqmlobjectrepresentation'
+            _attrs = [
+                attr.XmlAttribute(key='is_final', tag='IsFinal', xml_type='boolean'),
+            ]
+
+    """
 
     # Subclasses can define simple XML or HDF attributes,
     # and the base class will handle loading and saving
