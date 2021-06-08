@@ -430,20 +430,6 @@ class DeviationSurvey(BaseResqml):
       self._first_station_2 = value[1]
       self._first_station_3 = value[2]
 
-   @property
-   def root(self):
-      """Node corresponding to self.uuid"""
-      if self.uuid is None:
-         raise ValueError('Cannot get root if uuid is None')
-      return self.model.root_for_uuid(self.uuid)
-
-   @property
-   def part(self):
-      """Part corresponding to self.uuid"""
-      if self.uuid is None:
-         raise ValueError('Cannot get part if uuid is None')
-      return self.model.part_for_uuid(self.uuid)
-
    @classmethod
    def from_data_frame(cls, parent_model, data_frame, md_datum=None, md_col='MD',
                        azimuth_col='AZIM_GN', inclination_col='INCL', x_col='X', y_col='Y',
