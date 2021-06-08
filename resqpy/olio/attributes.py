@@ -75,7 +75,7 @@ class XmlAttribute(BaseAttribute):
     def write_xml(self, obj):
         """Write the object to XML"""
 
-        if not self.writeable:
+        if not self.writable:
             return
 
         if '/' in self.tag:
@@ -128,7 +128,7 @@ class HdfAttribute(BaseAttribute):
     def write_xml(self, obj):
         """Write the object to XML, set as attribute of obj"""
             
-        if not self.writeable:
+        if not self.writable:
             return
 
         logger.debug(f"Writing attribute {self} to HDF")

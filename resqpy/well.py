@@ -336,9 +336,9 @@ class DeviationSurvey(BaseResqml):
       attr.XmlAttribute(key='angle_uom', tag='AngleUom', xml_type='PlaneAngleUom'),
       
       # Nested tags, with custom write_xml
-      attr.XmlAttribute(key='_first_station_1', tag='FirstStationLocation/Coordinate1', xml_type="double", writeable=False),
-      attr.XmlAttribute(key='_first_station_2', tag='FirstStationLocation/Coordinate2', xml_type="double", writeable=False),
-      attr.XmlAttribute(key='_first_station_3', tag='FirstStationLocation/Coordinate3', xml_type="double", writeable=False),
+      attr.XmlAttribute(key='_first_station_1', tag='FirstStationLocation/Coordinate1', xml_type="double", writable=False),
+      attr.XmlAttribute(key='_first_station_2', tag='FirstStationLocation/Coordinate2', xml_type="double", writable=False),
+      attr.XmlAttribute(key='_first_station_3', tag='FirstStationLocation/Coordinate3', xml_type="double", writable=False),
 
       # HDF5 arrays
       attr.HdfAttribute(key='measured_depths', tag='Mds', xml_type='DoubleHdf5Array'),
