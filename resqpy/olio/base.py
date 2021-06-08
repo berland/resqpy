@@ -22,11 +22,11 @@ class BaseResqml(metaclass=ABCMeta):
     _attrs: Iterable[BaseAttribute] = ()
 
     # Subclasses must define which RESQML property they handle,
-    # by overwriting the _resqml_obj attribute
+    # by overwriting the _content_type attribute
 
     @property
     @abstractmethod
-    def _resqml_obj(self):
+    def _content_type(self):
         raise NotImplementedError
 
     def __init__(self, model, uuid=None, title=None, originator=None):
@@ -41,10 +41,6 @@ class BaseResqml(metaclass=ABCMeta):
         self.model = model
         self.title = title
         self.originator = originator
-
-        # Temporary cache of root note
-        # TODO: remove attibute _root
-        self._root = None
 
         if uuid is None:
             self.uuid = bu.new_uuid()
@@ -70,14 +66,12 @@ class BaseResqml(metaclass=ABCMeta):
 
         if self.uuid is None:
             raise ValueError('Cannot get root if uuid is None')
-        if self._root is not None:
-            return self._root
         return self.model.root_for_uuid(self.uuid)
     
     @root.setter
     def root(self, value):
-        # Only store the new uuid if root is changed
-        self._root = value
+        """Update self.uuid to match new root. Ensure root is added as a part"""
+
         new_uuid = rqet.uuid_for_part_root(value)
         if new_uuid is None:
             raise ValueError("Cannot set uuid to be None")
@@ -90,14 +84,14 @@ class BaseResqml(metaclass=ABCMeta):
         """
 
         # Citation block
-        self.title = rqet.find_nested_tags_text(self.root_node, ['Citation', 'Title'])
-        self.originator = rqet.find_nested_tags_text(self.root_node, ['Citation', 'Originator'])
+        self.title = rqet.find_nested_tags_text(self.root, ['Citation', 'Title'])
+        self.originator = rqet.find_nested_tags_text(self.root, ['Citation', 'Originator'])
 
         # Any other simple attributes
         for attr in self._attrs:
             attr.load(self)
 
-    def create_xml(self, title=None, originator=None, ext_uuid=None):
+    def create_xml(self, title=None, originator=None, ext_uuid=None, add_as_part=True):
         """Write XML for all attributes
 
         Writes to disk the attributes as defined in self._attrs
@@ -107,16 +101,22 @@ class BaseResqml(metaclass=ABCMeta):
                 human readable way
             originator (string, optional): the name of the human being who created the deviation survey part;
                 default is to use the login name
-        
+            add_as_part (boolean, default True): if True, the newly created xml node is added as a part
+                in the model
+    
         """
 
         assert self.uuid is not None
 
         if ext_uuid is None: ext_uuid = self.model.h5_uuid()
 
-        node = self.model.new_obj_node(self._resqml_obj)
+        # Create the root node
+        node = self.model.new_obj_node(self._content_type)
         node.attrib['uuid'] = str(self.uuid)
-        self.root = node
+
+        if add_as_part:
+            self.model.add_part(self._content_type, self.uuid, node)
+        # self.root = node
 
         assert self.root is not None
 
@@ -165,9 +165,6 @@ class BaseResqml(metaclass=ABCMeta):
         for key in keys_to_display:
             html += f"<strong>{key}</strong>: {getattr(self, key)}<br>\n"
         return html
-
-    
-
 
     # Include some aliases for root, but raise warnings if they are used
     # TODO: remove these aliases for self.node

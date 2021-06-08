@@ -1,7 +1,7 @@
 from resqpy.olio.base import BaseResqml
 
 class DummyObj(BaseResqml):
-    _resqml_obj = 'DummyResqmlInterpretation'
+    _content_type = 'DummyResqmlInterpretation'
 
 def test_base(example_model):
 
@@ -11,8 +11,13 @@ def test_base(example_model):
     model, crs = example_model
     dummy = DummyObj(model=model, title=title, originator=originator)
 
-    # Basic attributes and properties
+    # UUID should be none, but root and XML root and part do not yet exist
     assert dummy.uuid is not None
+    assert dummy.root is None
+    assert dummy.part is None
+
+    # After creating XML, root and part should exist
+    dummy.create_xml()
     assert dummy.root is not None
     assert dummy.part is not None
 

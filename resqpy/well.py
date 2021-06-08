@@ -326,7 +326,7 @@ class DeviationSurvey(BaseResqml):
 
    """
 
-   _resqml_obj = "DeviationSurveyRepresentation"
+   _content_type = "DeviationSurveyRepresentation"
 
    _attrs =(
       # Top-level tags
