@@ -82,6 +82,11 @@ class BaseResqml(metaclass=ABCMeta):
         Loads the attributes as defined in self._attrs
         """
 
+        # Citation block
+        self.title = rqet.find_nested_tags_text(self.root_node, ['Citation', 'Title'])
+        self.originator = rqet.find_nested_tags_text(self.root_node, ['Citation', 'Originator'])
+
+        # Any other simple attributes
         for attr in self._attrs:
             attr.load(self)
 
