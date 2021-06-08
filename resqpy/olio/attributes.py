@@ -1,11 +1,15 @@
 """ Easy attributes for defining what should be saved to XML & HDF5 """
 
+import logging
 from abc import abstractmethod
 from dataclasses import dataclass
 
 import resqpy.olio.xml_et as rqet
 import resqpy.olio.weights_and_measures as bwam
 from resqpy.olio.xml_namespaces import curly_namespace as ns
+
+
+logger = logging.getLogger(__name__)
 
 
 # Todo: Enum of the valid XML types
@@ -48,6 +52,8 @@ class XmlAttribute(BaseAttribute):
             obj: python object for which to load. Must have attribute obj.root
         """
 
+        logger.debug(f"Loading attribute {self} from XML")
+
         assert hasattr(obj, 'root')
         tag_list = self.tag.split('/')
         value = rqet.find_nested_tags_cast(obj.root, tag_list, dtype=self.dtype)
@@ -64,8 +70,10 @@ class XmlAttribute(BaseAttribute):
         if '/' in self.tag:
             raise NotImplementedError(
                 "XmlAttribute cannot currently write nested attributes"
-                )
+            )
         
+        logger.debug(f"Writing attribute {self} to XML")
+
         node = obj.root
         assert node is not None
 
@@ -100,6 +108,8 @@ class HdfAttribute(BaseAttribute):
     def load(self, obj):
         """Load the array from HDF5, set as attribute of obj"""
 
+        logger.debug(f"Loading attribute {self} from HDF")
+
         model = obj.model
         root = obj.root
 
@@ -116,6 +126,8 @@ class HdfAttribute(BaseAttribute):
             
         if not self.writeable:
             return
+
+        logger.debug(f"Writing attribute {self} to HDF")
 
         node = obj.root
         model = obj.model
