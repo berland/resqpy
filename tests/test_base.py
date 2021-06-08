@@ -3,7 +3,8 @@ from resqpy.olio.base import BaseResqml
 class DummyObj(BaseResqml):
     _content_type = 'DummyResqmlInterpretation'
 
-def test_base(example_model):
+
+def test_base_creation(example_model):
 
     # Setup new object
     title = 'Wondermuffin'
@@ -11,7 +12,7 @@ def test_base(example_model):
     model, crs = example_model
     dummy = DummyObj(model=model, title=title, originator=originator)
 
-    # UUID should be none, but root and XML root and part do not yet exist
+    # UUID should exist, but not root or part
     assert dummy.uuid is not None
     assert dummy.root is None
     assert dummy.part is None
@@ -21,9 +22,30 @@ def test_base(example_model):
     assert dummy.root is not None
     assert dummy.part is not None
 
-    # Comparison with other objects of the same class
-    dummy2 = DummyObj(model=model, uuid=dummy.uuid)
-    assert dummy == dummy2
 
-    dummy3 = DummyObj(model=model, title=title)
-    assert dummy != dummy3
+def test_base_comparison(example_model):
+
+    # Setup new object
+    model, crs = example_model
+    dummy1 = DummyObj(model=model)
+    dummy2 = DummyObj(model=model, uuid=dummy1.uuid)  # Same UUID
+    dummy3 = DummyObj(model=model, title='hello')     # Different UUID
+
+    # Comparison should work by UUID
+    assert dummy1 == dummy2
+    assert dummy1 != dummy3
+
+    
+def test_base_repr(example_model):
+
+    model, crs = example_model
+    dummy = DummyObj(model=model)
+
+    # Check repr method produces a string
+    rep = repr(dummy)
+    assert isinstance(rep, str)
+    assert len(rep) > 0
+
+    # Check HTML can be generated
+    html = dummy._repr_html_()
+    assert len(html) > 0
