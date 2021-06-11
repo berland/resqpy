@@ -16,27 +16,37 @@
 # Point to the current working copy of resqml
 import os
 import sys
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..',)))
+
+sys.path.insert(
+    0,
+    os.path.abspath(
+        os.path.join(
+            os.path.dirname(__file__),
+            "..",
+        )
+    ),
+)
 
 # Mock imports for things not available
 # autodoc_mock_imports = ["h5py"]
 
 # -- Project information -----------------------------------------------------
 
-project = 'resqpy'
-copyright = '2021, BP'
-author = 'BP'
+project = "resqpy"
+copyright = "2021, BP"
+author = "BP"
 
 # Version from git tag
 # See https://github.com/pypa/setuptools_scm/#usage-from-sphinx
 try:
     from importlib import metadata
-    release = metadata.version('myproject')
+
+    release = metadata.version("myproject")
 except Exception:
-    release = '0.0.0-version-not-available'
+    release = "0.0.0-version-not-available"
 
 # Take major/minor
-version = '.'.join(release.split('.')[:2])
+version = ".".join(release.split(".")[:2])
 
 
 # -- General configuration ---------------------------------------------------
@@ -52,20 +62,20 @@ autosummary_generate = True  # Make _autosummary files and include them
 autosummary_generate_overwrite = True
 
 napoleon_use_rtype = False  # More legible
-autodoc_member_order = 'bysource'
+autodoc_member_order = "bysource"
 # napoleon_numpy_docstring = False  # Force consistency, leave only Google
 
 extensions = [
-    'sphinx.ext.autodoc',
-    'sphinx.ext.autosummary',
-    'sphinx.ext.napoleon',
-    'sphinx.ext.viewcode',
-    'autoclasstoc',
+    "sphinx.ext.autodoc",
+    "sphinx.ext.autosummary",
+    "sphinx.ext.napoleon",
+    "sphinx.ext.viewcode",
+    "autoclasstoc",
 ]
 
-templates_path = ['_templates']
+templates_path = ["_templates"]
 
-exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store', '**.ipynb_checkpoints']
+exclude_patterns = ["_build", "Thumbs.db", ".DS_Store", "**.ipynb_checkpoints"]
 
 
 # -- Options custom autoclasstoc sections ------------------------------------
@@ -74,35 +84,38 @@ exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store', '**.ipynb_checkpoints']
 
 from autoclasstoc import PublicMethods
 
+
 class CommomMethods(PublicMethods):
     key = "common-methods"
     title = "Commonly Used Methods:"
 
     def predicate(self, name, attr, meta):
-        return super().predicate(name, attr, meta) and 'common' in meta
+        return super().predicate(name, attr, meta) and "common" in meta
+
 
 class OtherMethods(PublicMethods):
     key = "other-methods"
     title = "Methods:"
 
     def predicate(self, name, attr, meta):
-        return super().predicate(name, attr, meta) and 'common' not in meta
+        return super().predicate(name, attr, meta) and "common" not in meta
+
 
 autoclasstoc_sections = [
-        "public-attrs",
-        "common-methods",
-        "other-methods",
+    "public-attrs",
+    "common-methods",
+    "other-methods",
 ]
 
 # -- Options for HTML output -------------------------------------------------
 
-html_theme = 'sphinx_rtd_theme'
+html_theme = "sphinx_rtd_theme"
 
 # Override table width restrictions
 # See https://rackerlabs.github.io/docs-rackspace/tools/rtd-tables.html
-html_static_path = ['_static']
+html_static_path = ["_static"]
 html_context = {
-    'css_files': [
-        '_static/theme_overrides.css',  # override wide tables in RTD theme
-        ],
-     }
+    "css_files": [
+        "_static/theme_overrides.css",  # override wide tables in RTD theme
+    ],
+}

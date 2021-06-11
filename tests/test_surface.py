@@ -5,7 +5,7 @@ import resqpy.organize
 def test_surface(example_model):
 
     # Set up a Surface
-    title = 'Mountbatten'
+    title = "Mountbatten"
     model, crs = example_model
     surf = resqpy.surface.Surface(
         parent_model=model, extract_from_xml=False, title=title
@@ -14,7 +14,7 @@ def test_surface(example_model):
 
     # Add a interpretation
     assert surf.represented_interpretation_root is None
-    surf.create_interpretation_and_feature(kind='fault')
+    surf.create_interpretation_and_feature(kind="fault")
     assert surf.represented_interpretation_root is not None
 
     # Check fault can be loaded in again

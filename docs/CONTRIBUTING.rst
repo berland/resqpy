@@ -38,13 +38,13 @@ Making a Pull Request
 
 2. Set up a python environment
 
-   It is recommended that you set up an isolated python environment, using conda or virtualenv. 
+   It is recommended that you set up an isolated python environment, using conda or virtualenv.
 
    .. code-block:: bash
 
       conda create -n resqpy python=3.7
       conda activate resqpy
-        
+
    You should then make an “editable” installation of the package into your local environment. This will
    also install required dependencies, including extra packages required to running
    unit tests.
@@ -52,7 +52,7 @@ Making a Pull Request
    .. code-block:: bash
 
       pip install --editable .[tests]
-    
+
 3. Make a Pull Request
 
    Create a new branch from master:
@@ -73,19 +73,16 @@ Checklist for pull requests
 2. Changes or additions should have appropriate unit tests (see below)
 3. Follow the PEP8 style guide as far as possible (with caveats below).
 4. All public functions and classes should have
-   `Google-style docstrings <https://sphinxcontrib-napoleon.readthedocs.io/en/latest/example_google.html>`_ 
+   `Google-style docstrings <https://sphinxcontrib-napoleon.readthedocs.io/en/latest/example_google.html>`_
 
 Code Style
 ----------
 
+Code must be written in accordance with the `black` code formatter.
 Please try to write code according to the python style guide (PEP8), which
 defines conventions such as variable naming and capitalisation. A consistent
 style makes it much easier for other developers to read and understand your
 code.
-
-Note the existing code base differs from PEP8 in using 3 spaces for indenation
-rather than the usual 4. When editing these modules, it is preferable that new
-code has indentation that is consistent with the rest of the module.
 
 See `Static analysis`_ for how to check your code for conformance to PEP8 style.
 
@@ -193,7 +190,3 @@ Code of Conduct
 We abide by the Contributor-covenant standard:
 
 https://www.contributor-covenant.org/version/1/4/code-of-conduct/code_of_conduct.md
-
-
-
-
